@@ -15,5 +15,5 @@ class ChatResponse(BaseModel):
     answer: str
     confidence: float
     route: str
-    citations: List[Dict[str, Any]] = []
-    metrics: Dict[str, Any] = {}
+    citations: List[Dict[str, Any]] = Field(default_factory=list)
+    metrics: Dict[str, Any] = Field(default_factory=dict)
