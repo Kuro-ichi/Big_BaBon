@@ -1,3 +1,5 @@
+import time
+
 from app.schemas.chat_schema import ChatRequest
 from app.graph.graph_builder import build_chat_graph
 
@@ -15,7 +17,11 @@ class ChatService:
             "route": "",
             "intent": "",
             "risk_level": "normal",
-            "runtime_context": {"language": request.language or "vi"},
+            "safety_action": "pass",
+            "safety_condition": "",
+            "safety_response_kind": "",
+            "safety_fast_path": False,
+            "runtime_context": {},
             "search_plan": {},
             "documents": [],
             "selected_context": "",
@@ -27,18 +33,20 @@ class ChatService:
             "trace": [],
             "metrics": {},
         }
+        started = time.perf_counter()
         result = await self.graph.ainvoke(state)
+        result.setdefault("metrics", {})["total_latency_ms"] = round((time.perf_counter() - started) * 1000, 2)
         return {
-            "request_id": result.get("request_id", request.request_id),
-            "answer": result.get("answer", ""),
-            "confidence": result.get("confidence", 0.0),
-            "route": result.get("route", ""),
-            "citations": result.get("citations", []),
-            "metrics": result.get("metrics", {}),
+            "request_id": result["request_id"],
+            "answer": result["answer"],
+            "confidence": result["confidence"],
+            "route": result["route"],
+            "citations": result["citations"],
+            "metrics": result["metrics"],
         }
-
     async def chat_stream(self, request: ChatRequest):
         return await self.chat(request)
 
 def get_chat_service() -> ChatService:
     return ChatService()
+    

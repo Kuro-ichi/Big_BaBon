@@ -9,6 +9,10 @@ class ChatState(TypedDict):
     route: str
     intent: str
     risk_level: str
+    safety_action: str
+    safety_condition: str
+    safety_response_kind: str
+    safety_fast_path: bool
     runtime_context: Dict[str, Any]
     search_plan: Dict[str, Any]
     documents: List[Dict[str, Any]]

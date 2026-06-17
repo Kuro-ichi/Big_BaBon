@@ -1,36 +1,79 @@
-def _safe_score(value, default=0.5):
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
+import unicodedata
+
+from app.core.config import settings
+
+
+def _fold(text: str) -> str:
+    normalized = unicodedata.normalize("NFD", (text or "").lower())
+    folded = "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
+    return folded.replace("đ", "d")
+
+
+UNSAFE_ANSWER_PATTERNS = [
+    "bo thuoc",
+    "ngung thuoc",
+    "tu giam lieu",
+    "bo insulin",
+    "ngung insulin",
+    "thay hoa tri",
+    "thay xa tri",
+    "bo loc mau",
+    "chua khoi ung thu",
+    "chua khoi tieu duong",
+    "detox 3 ngay",
+    "nhin an",
+    "cang an it cang tot",
+]
+
+SAFE_NEGATIONS = [
+    "khong",
+    "khong nen",
+    "khong the",
+    "khong khuyen nghi",
+    "dung",
+    "tranh",
+]
+
 
 def rule_context_check_node(state):
     docs = state.get("documents", [])
-    selected_count = state.get("metrics", {}).get("context", {}).get("selected_count", 0)
     if not docs:
         state["confidence"] = 0.0
     else:
-        best_score = max([_safe_score(doc.get("rerank_score", doc.get("score", 0.5))) for doc in docs])
-        coverage_bonus = min(selected_count * 0.04, 0.2)
-        state["confidence"] = round(min(max(best_score + coverage_bonus, 0.05), 0.95), 4)
-    state["metrics"]["context_guard"] = {
-        "has_context": bool(state.get("selected_context")),
-        "citation_count": len(state.get("citations", [])),
-    }
+        state["confidence"] = min(max([doc.get("score", 0.5) for doc in docs]), 0.95)
     state["trace"].append({"node": "rule_context_check", "confidence": state["confidence"]})
     return state
+
+
+def route_after_context_check(state):
+    if state.get("safety_action") == "respond":
+        return "answer_generation"
+    if not settings.WEB_FALLBACK_ENABLED:
+        return "answer_generation"
+    if state.get("web_fallback_used"):
+        return "answer_generation"
+
+    plan = state.get("search_plan", {})
+    needs_web = bool(plan.get("need_web", False))
+    low_confidence = state.get("confidence", 0.0) < settings.WEB_FALLBACK_CONFIDENCE_THRESHOLD
+    no_context = not state.get("selected_context")
+    if needs_web or low_confidence or no_context:
+        return "web_fallback"
+    return "answer_generation"
+
 
 def lightweight_guard_node(state):
     problems = []
     if not state.get("answer"):
         problems.append("empty_answer")
-    if state.get("selected_context") and not state.get("citations"):
-        problems.append("missing_citations")
-    answer_lower = state.get("answer", "").lower()
-    if "system prompt" in answer_lower or "chain-of-thought" in answer_lower or "developer message" in answer_lower:
-        problems.append("internal_prompt_leak_risk")
-    if state.get("route") == "rag" and not state.get("selected_context"):
-        problems.append("insufficient_context")
+    answer_folded = _fold(state.get("answer") or "")
+    if state.get("risk_level") in {"sensitive", "blocked"}:
+        for pattern in UNSAFE_ANSWER_PATTERNS:
+            if pattern in answer_folded and not any(negation in answer_folded for negation in SAFE_NEGATIONS):
+                problems.append(f"unsafe_phrase:{pattern}")
+                break
+    if problems:
+        state["errors"].append({"node": "lightweight_guard", "problems": problems})
     state["metrics"]["guard_problems"] = problems
     state["trace"].append({"node": "lightweight_guard", "problems": problems})
     return state
