@@ -386,15 +386,18 @@ class RetrievalService:
         if cached is not None:
             return cached
 
-        client = self._get_client()
+        client = self._get_client()        
+        query_filter = self._build_qdrant_filter(filters)
+        
         docs = []
         offset = None
         scanned = 0
         try:
             while True:
+                
                 points, offset = await client.scroll(
                     collection_name=settings.QDRANT_COLLECTION,
-                    scroll_filter=None,
+                    scroll_filter=query_filter,
                     limit=256,
                     offset=offset,
                     with_payload=True,

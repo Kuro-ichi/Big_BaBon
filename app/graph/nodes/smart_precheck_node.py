@@ -180,7 +180,7 @@ async def smart_precheck_node(state):
             "preferred_source_types": ["food_composition_table"],
             "condition": ["food_data"],
             "top_k_vector": max(int(precheck.get("search_plan", {}).get("top_k_vector", 8)), 12),
-            "top_k_keyword": max(int(precheck.get("search_plan", {}).get("top_k_keyword", 5)), 8),
+            "top_k_keyword": 0,
         })
     elif _has_any(question_folded, DIABETES_HINT_TERMS):
         plan_updates.update({
