@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 import redis.asyncio as redis
@@ -8,8 +9,15 @@ from app.core.config import settings
 class CacheService:
     def __init__(self):
         self._client = None
+        self._client_loop = None
 
     def _get_client(self):
+        loop = asyncio.get_running_loop()
+        # Bỏ client cũ nếu loop tạo nó đã đóng (Celery task = loop mới mỗi lần).
+        if self._client is not None and (self._client_loop is not loop or self._client_loop.is_closed()):
+            self._client = None
+            self._client_loop = None
+
         if self._client is None:
             self._client = redis.Redis.from_url(
                 settings.REDIS_URL,
@@ -18,6 +26,7 @@ class CacheService:
                 socket_connect_timeout=settings.REDIS_CONNECT_TIMEOUT,
                 socket_timeout=settings.REDIS_SOCKET_TIMEOUT,
             )
+            self._client_loop = loop
         return self._client
 
     async def get_json(self, key: str):

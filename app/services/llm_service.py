@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 import re
@@ -12,7 +13,7 @@ from app.prompts.smalltalk_prompt import SMALLTALK_SYSTEM_PROMPT
 from app.prompts.summary_prompt import SUMMARY_SYSTEM_PROMPT
 from app.services.cache_service import cache_service
 
-PRECHECK_CACHE_VERSION = 2
+PRECHECK_CACHE_VERSION = 4
 
 
 class LLMService:
@@ -21,13 +22,22 @@ class LLMService:
         self._url = settings.OLLAMA_URL.rstrip("/")
         self._model_light = settings.LLM_MODEL_LIGHT
         self._model_heavy = settings.LLM_MODEL_HEAVY
+        # Router dùng model riêng (mạnh hơn) để định tuyến ổn định; rỗng -> fallback về light.
+        self._model_router = settings.LLM_MODEL_ROUTER or settings.LLM_MODEL_LIGHT
         self._client: httpx.AsyncClient | None = None
+        self._client_loop = None
 
     @property
     def _use_local(self) -> bool:
         return self._provider in ("local", "ollama")
 
     def _get_client(self) -> httpx.AsyncClient:
+        loop = asyncio.get_running_loop()
+        # Bỏ client cũ nếu loop tạo nó đã đóng (Celery task = loop mới mỗi lần).
+        if self._client is not None and (self._client_loop is not loop or self._client_loop.is_closed()):
+            self._client = None
+            self._client_loop = None
+
         if self._client is None:
             self._client = httpx.AsyncClient(
                 timeout=httpx.Timeout(
@@ -37,6 +47,7 @@ class LLMService:
                     pool=3.0,
                 )
             )
+            self._client_loop = loop
         return self._client
 
     async def _chat(self, model: str, messages: list, json_mode: bool = False, timeout: float | None = None) -> str:
@@ -116,7 +127,7 @@ class LLMService:
         ]
         try:
             raw = await self._chat(
-                self._model_light,
+                self._model_router,
                 messages,
                 json_mode=True,
                 timeout=settings.LLM_ROUTER_TIMEOUT,

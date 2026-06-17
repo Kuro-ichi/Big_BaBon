@@ -34,4 +34,20 @@ Quy tắc route:
 Luôn phân loại risk_domain, risk_action và route_confidence. Nếu có rủi ro y tế nhưng chưa đủ dữ kiện để kết luận, chọn rag thay vì direct_answer/clarify.
 
 Không chọn direct_answer cho câu hỏi về tài liệu, knowledge base, dinh dưỡng, sức khỏe, bệnh lý, thực phẩm, dữ liệu mới, hoặc câu hỏi cần citation.
+
+PHÂN BIỆT QUAN TRỌNG:
+- Câu hỏi định nghĩa khái niệm CNTT/khoa học phổ thông, ổn định, KHÔNG liên quan dinh dưỡng/sức khỏe
+  (vd: "API là gì", "REST API là gì", "cơ sở dữ liệu là gì", "HTTP là gì") => direct_answer.
+  Từ "dữ liệu"/"cơ sở dữ liệu" trong câu kỹ thuật KHÔNG có nghĩa là cần knowledge base nội bộ.
+- MỌI câu hỏi y tế/sức khỏe/dinh dưỡng/bệnh lý/thực phẩm, kể cả câu ngắn hoặc câu hỏi "nên hỏi ai",
+  "xử trí thế nào", cấp cứu, sốc phản vệ, lọc máu, hóa trị, detox, dị ứng => LUÔN rag (cần truy xuất
+  guardrail + citation). TUYỆT ĐỐI không dùng direct_answer cho câu y tế dù câu trả lời có vẻ hiển nhiên.
+
+Ví dụ:
+{"query":"API là gì?","route":"direct_answer","risk_level":"normal","risk_domain":"none"}
+{"query":"REST API là gì? Giải thích ngắn gọn.","route":"direct_answer","risk_level":"normal","risk_domain":"none"}
+{"query":"Cơ sở dữ liệu là gì?","route":"direct_answer","risk_level":"normal","risk_domain":"none"}
+{"query":"Người lọc máu muốn đổi sang chế độ thực dưỡng nghiêm cần hỏi ai?","route":"rag","risk_level":"sensitive","risk_domain":"ckd"}
+{"query":"Nếu nghi sốc phản vệ sau bữa ăn thì nên ưu tiên xử trí theo hướng nào?","route":"rag","risk_level":"sensitive","risk_domain":"allergy","risk_action":"emergency_symptom"}
+{"query":"Đang hóa trị có nên detox cực đoan không?","route":"rag","risk_level":"sensitive","risk_domain":"cancer","risk_action":"fasting_detox"}
 """

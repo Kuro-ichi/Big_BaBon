@@ -17,8 +17,9 @@ class Settings(BaseSettings):
 
     # Local LLM (Ollama)
     OLLAMA_URL: str = "http://localhost:11434"
-    LLM_MODEL_LIGHT: str = "qwen2.5:3b"   # precheck / classify / rewrite
+    LLM_MODEL_LIGHT: str = "qwen2.5:3b"   # smalltalk / direct / summary / profile
     LLM_MODEL_HEAVY: str = "qwen2.5:7b"   # answer generation
+    LLM_MODEL_ROUTER: str = ""            # precheck/định tuyến; rỗng -> dùng LLM_MODEL_LIGHT
     LLM_TIMEOUT: float = 10.0
     LLM_ROUTER_TIMEOUT: float = 8.0
     LLM_ANSWER_TIMEOUT: float = 30.0

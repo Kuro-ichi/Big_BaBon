@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 import logging
@@ -46,8 +47,16 @@ STOPWORDS = {
 class RetrievalService:
     def __init__(self):
         self._client = None
+        self._client_loop = None
 
     def _get_client(self):
+        loop = asyncio.get_running_loop()
+        # Singleton client gắn vào event loop tạo ra nó. Trong Celery worker mỗi
+        # task chạy asyncio.run() => loop mới => phải bỏ client cũ (loop đã đóng).
+        if self._client is not None and (self._client_loop is not loop or self._client_loop.is_closed()):
+            self._client = None
+            self._client_loop = None
+
         if self._client is None:
             from qdrant_client import AsyncQdrantClient
 
@@ -56,6 +65,7 @@ class RetrievalService:
                 api_key=settings.QDRANT_API_KEY or None,
                 timeout=settings.QDRANT_TIMEOUT,
             )
+            self._client_loop = loop
         return self._client
 
     async def close(self) -> None:
