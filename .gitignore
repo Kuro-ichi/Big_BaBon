@@ -1,0 +1,52 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Test/coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Logs/runtime
+*.log
+*.pid
+celerybeat-schedule*
+
+# Local databases/backups
+*.sqlite3
+*.db
+*.bak
+*.dump
+*.sql.gz
+
+# Evaluation outputs — giữ test cases
+evals/*result*.json
+evals/*result*.jsonl
+evals/latest_results.jsonl
+evals/eval_sum_*.json
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
