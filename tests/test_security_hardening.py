@@ -104,6 +104,16 @@ class OutputGuardTests(unittest.TestCase):
         self.assertEqual(state["answer"], "Bạn không nên bỏ insulin.")
         self.assertFalse(state["metrics"]["guard_replaced_answer"])
 
+    def test_curated_safety_fast_path_is_not_rejected(self):
+        state = self._state("Bạn không nên dùng muối kali, nhịn ăn hoặc detox.")
+        state["safety_fast_path"] = True
+        state["safety_action"] = "respond"
+
+        guarded = lightweight_guard_node(state)
+
+        self.assertEqual(guarded["answer"], "Bạn không nên dùng muối kali, nhịn ăn hoặc detox.")
+        self.assertFalse(guarded["metrics"]["guard_replaced_answer"])
+
 
 if __name__ == "__main__":
     unittest.main()

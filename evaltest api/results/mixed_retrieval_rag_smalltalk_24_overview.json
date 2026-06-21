@@ -1,0 +1,46 @@
+{
+  "suite": {
+    "name": "mixed_retrieval_rag_smalltalk_24",
+    "total": 24,
+    "users": 6,
+    "turns_per_user": 4,
+    "categories": {"smalltalk": 6, "retrieval": 6, "rag": 6, "rag_context": 6}
+  },
+  "before_bugfix": {
+    "passed": 9,
+    "failed": 15,
+    "pass_rate": 0.375,
+    "route_accuracy": 1.0,
+    "confidence_threshold_rate": 0.375,
+    "context_content_recall": 0.8333,
+    "avg_latency_seconds": 17.796
+  },
+  "after_bugfix_raw": {
+    "passed": 21,
+    "failed": 3,
+    "pass_rate": 0.875,
+    "route_accuracy": 0.9583,
+    "confidence_threshold_rate": 1.0,
+    "citation_threshold_rate": 0.9583,
+    "source_type_accuracy": 0.9444,
+    "must_include_rate": 0.9444,
+    "no_foreign_script_rate": 1.0,
+    "context_content_recall": 0.9167,
+    "context_full_case_pass_rate": 0.8333,
+    "avg_latency_seconds": 17.012,
+    "p95_latency_seconds": 37.587
+  },
+  "remaining_raw_failures": [
+    {"id": "MIX_U01_T2", "reason": "Ollama heavy-model timeout"},
+    {"id": "MIX_U01_T4", "reason": "context follow-up routed direct; fixed after raw run"},
+    {"id": "MIX_U04_T3", "reason": "negated safe phrase matched strict forbidden substring; case fixed"}
+  ],
+  "artifacts": {
+    "cases": "evaltest api/cases/mixed_retrieval_rag_smalltalk_24.jsonl",
+    "raw_results_before_bugfix": "evaltest api/results/mixed_retrieval_rag_smalltalk_24_results.jsonl",
+    "summary_before_bugfix": "evaltest api/results/mixed_retrieval_rag_smalltalk_24_summary.json",
+    "raw_results_after_bugfix": "evaltest api/results/mixed_retrieval_rag_smalltalk_24_results_afterfix.jsonl",
+    "summary_after_bugfix": "evaltest api/results/mixed_retrieval_rag_smalltalk_24_summary_afterfix.json",
+    "report": "evaltest api/reports/mixed_retrieval_rag_smalltalk_24_report.md"
+  }
+}

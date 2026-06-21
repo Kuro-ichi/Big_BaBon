@@ -1,0 +1,377 @@
+{
+  "total": 24,
+  "passed": 9,
+  "failed": 15,
+  "pass_rate": 0.375,
+  "latency_seconds": {
+    "min": 0.033,
+    "avg": 17.796,
+    "p50": 26.901,
+    "p90": 34.315,
+    "p95": 35.612,
+    "max": 36.482
+  },
+  "confidence": {
+    "avg": 0.3599,
+    "min": 0.0,
+    "max": 1.0
+  },
+  "citations": {
+    "avg_count": 4.792,
+    "min_count": 0,
+    "max_count": 8
+  },
+  "routes": {
+    "smalltalk": 6,
+    "rag": 18
+  },
+  "route_accuracy": {
+    "correct": 24,
+    "total": 24,
+    "rate": 1.0
+  },
+  "check_pass_rates": {
+    "request_ok": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "answer_not_empty": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "no_llm_error": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "route": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "min_confidence": {
+      "total": 24,
+      "passed": 9,
+      "rate": 0.375
+    },
+    "min_citations": {
+      "total": 24,
+      "passed": 23,
+      "rate": 0.9583
+    },
+    "must_not_include": {
+      "total": 24,
+      "passed": 23,
+      "rate": 0.9583
+    },
+    "no_cjk_characters": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "expected_source_types": {
+      "total": 18,
+      "passed": 16,
+      "rate": 0.8889
+    },
+    "must_include": {
+      "total": 18,
+      "passed": 15,
+      "rate": 0.8333
+    }
+  },
+  "status_codes": {
+    "200": 24
+  },
+  "server_latency_ms": {
+    "avg": 17774.22,
+    "p95": 35599.81,
+    "max": 36469.72
+  },
+  "client_overhead_ms": {
+    "avg": 21.52,
+    "p95": 51.73
+  },
+  "node_latency_ms": {
+    "answer_generation": {
+      "count": 18,
+      "min": 0.0,
+      "avg": 15626.04,
+      "p50": 18423.22,
+      "p95": 25742.7,
+      "max": 26013.19
+    },
+    "lightweight_guard": {
+      "count": 18,
+      "min": 0.04,
+      "avg": 0.1,
+      "p50": 0.09,
+      "p95": 0.19,
+      "max": 0.21
+    },
+    "load_runtime_context": {
+      "count": 24,
+      "min": 1.98,
+      "avg": 6.91,
+      "p50": 3.1,
+      "p95": 9.02,
+      "max": 75.03
+    },
+    "parallel_retrieval": {
+      "count": 14,
+      "min": 1783.17,
+      "avg": 2307.47,
+      "p50": 2311.95,
+      "p95": 2827.72,
+      "max": 3289.72
+    },
+    "persist_async": {
+      "count": 24,
+      "min": 11.73,
+      "avg": 18.61,
+      "p50": 14.32,
+      "p95": 39.76,
+      "max": 40.87
+    },
+    "rerank_trim": {
+      "count": 14,
+      "min": 2.48,
+      "avg": 3.13,
+      "p50": 3.0,
+      "p95": 4.04,
+      "max": 4.27
+    },
+    "rule_context_check": {
+      "count": 14,
+      "min": 0.01,
+      "avg": 0.01,
+      "p50": 0.01,
+      "p95": 0.02,
+      "max": 0.03
+    },
+    "safety_triage": {
+      "count": 18,
+      "min": 0.13,
+      "avg": 0.29,
+      "p50": 0.28,
+      "p95": 0.41,
+      "max": 0.5
+    },
+    "smalltalk_answer": {
+      "count": 6,
+      "min": 0.03,
+      "avg": 0.04,
+      "p50": 0.04,
+      "p95": 0.07,
+      "max": 0.07
+    },
+    "smart_precheck": {
+      "count": 24,
+      "min": 0.24,
+      "avg": 4669.5,
+      "p50": 8002.49,
+      "p95": 8005.2,
+      "max": 8012.9
+    }
+  },
+  "context_followups": {
+    "total": 12,
+    "full_case_passed": 0,
+    "full_case_pass_rate": 0.0,
+    "content_recall_passed": 10,
+    "content_recall_rate": 0.8333,
+    "route_correct": 12,
+    "route_accuracy": 1.0,
+    "failed_ids": [
+      "MIX_U01_T3",
+      "MIX_U01_T4",
+      "MIX_U02_T3",
+      "MIX_U02_T4",
+      "MIX_U03_T3",
+      "MIX_U03_T4",
+      "MIX_U04_T3",
+      "MIX_U04_T4",
+      "MIX_U05_T3",
+      "MIX_U05_T4",
+      "MIX_U06_T3",
+      "MIX_U06_T4"
+    ]
+  },
+  "by_user": {
+    "mix-user-01": {
+      "total": 4,
+      "passed": 1,
+      "pass_rate": 0.25,
+      "avg_latency_seconds": 21.726
+    },
+    "mix-user-02": {
+      "total": 4,
+      "passed": 1,
+      "pass_rate": 0.25,
+      "avg_latency_seconds": 23.049
+    },
+    "mix-user-03": {
+      "total": 4,
+      "passed": 2,
+      "pass_rate": 0.5,
+      "avg_latency_seconds": 17.138
+    },
+    "mix-user-04": {
+      "total": 4,
+      "passed": 1,
+      "pass_rate": 0.25,
+      "avg_latency_seconds": 13.834
+    },
+    "mix-user-05": {
+      "total": 4,
+      "passed": 2,
+      "pass_rate": 0.5,
+      "avg_latency_seconds": 16.477
+    },
+    "mix-user-06": {
+      "total": 4,
+      "passed": 2,
+      "pass_rate": 0.5,
+      "avg_latency_seconds": 14.55
+    }
+  },
+  "by_subcategory": {
+    "food_pho": {
+      "total": 4,
+      "passed": 1,
+      "pass_rate": 0.25
+    },
+    "food_rice": {
+      "total": 4,
+      "passed": 1,
+      "pass_rate": 0.25
+    },
+    "diabetes": {
+      "total": 4,
+      "passed": 2,
+      "pass_rate": 0.5
+    },
+    "ckd": {
+      "total": 4,
+      "passed": 1,
+      "pass_rate": 0.25
+    },
+    "cancer": {
+      "total": 4,
+      "passed": 2,
+      "pass_rate": 0.5
+    },
+    "allergy": {
+      "total": 4,
+      "passed": 2,
+      "pass_rate": 0.5
+    }
+  },
+  "by_category": {
+    "smalltalk": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "avg_latency_seconds": 0.064,
+      "p95_latency_seconds": 0.153
+    },
+    "retrieval": {
+      "total": 6,
+      "passed": 3,
+      "failed": 3,
+      "avg_latency_seconds": 11.394,
+      "p95_latency_seconds": 34.378
+    },
+    "rag": {
+      "total": 6,
+      "passed": 0,
+      "failed": 6,
+      "avg_latency_seconds": 29.095,
+      "p95_latency_seconds": 31.833
+    },
+    "rag_context": {
+      "total": 6,
+      "passed": 0,
+      "failed": 6,
+      "avg_latency_seconds": 30.629,
+      "p95_latency_seconds": 36.305
+    }
+  },
+  "llm_error_count": 0,
+  "failed_ids": [
+    "MIX_U01_T2",
+    "MIX_U01_T3",
+    "MIX_U01_T4",
+    "MIX_U02_T2",
+    "MIX_U02_T3",
+    "MIX_U02_T4",
+    "MIX_U03_T3",
+    "MIX_U03_T4",
+    "MIX_U04_T2",
+    "MIX_U04_T3",
+    "MIX_U04_T4",
+    "MIX_U05_T3",
+    "MIX_U05_T4",
+    "MIX_U06_T3",
+    "MIX_U06_T4"
+  ],
+  "top_slowest": [
+    {
+      "id": "MIX_U05_T4",
+      "category": "rag_context",
+      "elapsed_seconds": 36.482
+    },
+    {
+      "id": "MIX_U03_T4",
+      "category": "rag_context",
+      "elapsed_seconds": 35.774
+    },
+    {
+      "id": "MIX_U01_T2",
+      "category": "retrieval",
+      "elapsed_seconds": 34.693
+    },
+    {
+      "id": "MIX_U02_T2",
+      "category": "retrieval",
+      "elapsed_seconds": 33.434
+    },
+    {
+      "id": "MIX_U03_T3",
+      "category": "rag",
+      "elapsed_seconds": 32.664
+    },
+    {
+      "id": "MIX_U02_T4",
+      "category": "rag_context",
+      "elapsed_seconds": 29.919
+    },
+    {
+      "id": "MIX_U05_T3",
+      "category": "rag",
+      "elapsed_seconds": 29.339
+    },
+    {
+      "id": "MIX_U06_T3",
+      "category": "rag",
+      "elapsed_seconds": 29.137
+    },
+    {
+      "id": "MIX_U06_T4",
+      "category": "rag_context",
+      "elapsed_seconds": 28.977
+    },
+    {
+      "id": "MIX_U02_T3",
+      "category": "rag",
+      "elapsed_seconds": 28.806
+    }
+  ],
+  "execution": {
+    "seconds": 428.072,
+    "requests_per_second": 0.0561,
+    "sequential": true
+  }
+}

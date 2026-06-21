@@ -16,7 +16,27 @@ from app.prompts.summary_prompt import SUMMARY_SYSTEM_PROMPT
 from app.services.cache_service import cache_service
 
 TokenSink = Callable[[str], Awaitable[None]]
-PRECHECK_CACHE_VERSION = 4
+PRECHECK_CACHE_VERSION = 5
+
+SIMPLE_GREETING_PATTERNS = (
+    # Chào hỏi thuần túy, cho phép cách gọi và từ đệm thông dụng.
+    re.compile(
+        r"^(?:hi|hello|hey|(?:xin )?chao)"
+        r"(?: (?:ban|bot|tro ly|ad|admin|minh|nhe|a|oi))*$"
+    ),
+    # Hỏi chatbot có thể giúp/làm/hỗ trợ gì; có thể có lời chào phía trước.
+    re.compile(
+        r"^(?:(?:hi|hello|hey|(?:xin )?chao)(?: (?:ban|bot|tro ly|oi|nhe))* )?"
+        r"(?:(?:ban|bot|tro ly) )?(?:co the )?"
+        r"(?:giup(?: (?:toi|minh|em))?(?: duoc)? gi|lam(?: duoc)? gi|"
+        r"ho tro(?: (?:toi|minh|em))?(?: duoc)? gi)$"
+    ),
+)
+
+DEFAULT_GREETING_ANSWER = (
+    "Xin chào! Mình có thể giúp bạn giải đáp câu hỏi, tra cứu tài liệu và tư vấn "
+    "dựa trên kho kiến thức của hệ thống. Bạn muốn hỏi điều gì?"
+)
 
 
 class LLMService:
@@ -62,9 +82,12 @@ class LLMService:
         json_mode: bool = False,
         timeout: float | None = None,
         token_sink: TokenSink | None = None,
+        options: dict | None = None,
     ) -> str:
         should_stream = token_sink is not None and not json_mode
         payload = {"model": model, "messages": messages, "stream": should_stream}
+        if options:
+            payload["options"] = options
         if json_mode:
             payload["format"] = "json"
         client = self._get_client()
@@ -113,12 +136,41 @@ class LLMService:
         if not recent:
             return "Không có lịch sử gần đây."
         lines = []
-        for item in recent[-4:]:
+        # 8 message = tối đa 4 lượt user/assistant, đủ cho các chuỗi follow-up
+        # 3-4 câu mà không phải phụ thuộc vào việc model tự nhắc lại dữ kiện.
+        for item in recent[-8:]:
             role = item.get("role", "unknown")
             content = str(item.get("content", "")).strip()[:300]
             if content:
                 lines.append(f"{role}: {content}")
         return "\n".join(lines) or "Không có lịch sử gần đây."
+
+    @staticmethod
+    def _normalize_short_text(text: str) -> str:
+        replacements = str.maketrans({
+            "à": "a", "á": "a", "ạ": "a", "ả": "a", "ã": "a",
+            "â": "a", "ầ": "a", "ấ": "a", "ậ": "a", "ẩ": "a", "ẫ": "a",
+            "ă": "a", "ằ": "a", "ắ": "a", "ặ": "a", "ẳ": "a", "ẵ": "a",
+            "è": "e", "é": "e", "ẹ": "e", "ẻ": "e", "ẽ": "e",
+            "ê": "e", "ề": "e", "ế": "e", "ệ": "e", "ể": "e", "ễ": "e",
+            "ì": "i", "í": "i", "ị": "i", "ỉ": "i", "ĩ": "i",
+            "ò": "o", "ó": "o", "ọ": "o", "ỏ": "o", "õ": "o",
+            "ô": "o", "ồ": "o", "ố": "o", "ộ": "o", "ổ": "o", "ỗ": "o",
+            "ơ": "o", "ờ": "o", "ớ": "o", "ợ": "o", "ở": "o", "ỡ": "o",
+            "ù": "u", "ú": "u", "ụ": "u", "ủ": "u", "ũ": "u",
+            "ư": "u", "ừ": "u", "ứ": "u", "ự": "u", "ử": "u", "ữ": "u",
+            "ỳ": "y", "ý": "y", "ỵ": "y", "ỷ": "y", "ỹ": "y", "đ": "d",
+        })
+        normalized = text.lower().translate(replacements)
+        return " ".join(re.findall(r"[a-z0-9]+", normalized))
+
+    def _simple_greeting_answer(self, question: str) -> str | None:
+        normalized = self._normalize_short_text(question)
+        if len(normalized) <= 100 and any(
+            pattern.fullmatch(normalized) for pattern in SIMPLE_GREETING_PATTERNS
+        ):
+            return DEFAULT_GREETING_ANSWER
+        return None
 
     def _format_session_summary(self, runtime_context: dict) -> str:
         summary = str((runtime_context or {}).get("session_summary") or "").strip()
@@ -160,10 +212,14 @@ class LLMService:
 
     async def smart_precheck(self, question: str, runtime_context: dict):
         q = question.lower().strip()
-        if q in ["hi", "hello", "xin chào", "chào", "chao", "xin chao"]:
+        if self._simple_greeting_answer(question):
             return {"route": "smalltalk", "risk_level": "normal", "rewritten_query": question, "search_plan": {}}
 
-        cache_key = f"precheck:v{PRECHECK_CACHE_VERSION}:" + hashlib.sha256(q.encode("utf-8")).hexdigest()
+        router_context = self._format_runtime_context(runtime_context)
+        cache_material = f"{q}\n{router_context}"
+        cache_key = f"precheck:v{PRECHECK_CACHE_VERSION}:" + hashlib.sha256(
+            cache_material.encode("utf-8")
+        ).hexdigest()
         cached = await cache_service.get_json(cache_key)
         if cached is not None:
             return cached
@@ -179,7 +235,13 @@ class LLMService:
 
         messages = [
             {"role": "system", "content": ROUTER_PRECHECK_SYSTEM_PROMPT},
-            {"role": "user", "content": question},
+            {
+                "role": "user",
+                "content": (
+                    f"[Lịch sử gần đây]\n{router_context}\n\n"
+                    f"[Câu hỏi hiện tại]\n{question}"
+                ),
+            },
         ]
         try:
             raw = await self._chat(
@@ -207,8 +269,14 @@ class LLMService:
         runtime_context: dict,
         token_sink: TokenSink | None = None,
     ):
+        greeting_answer = self._simple_greeting_answer(question)
+        if greeting_answer:
+            if token_sink is not None:
+                await token_sink(greeting_answer)
+            return greeting_answer
+
         if not self._use_local:
-            return "Xin chào! Mình có thể hỗ trợ bạn hỏi đáp dựa trên tài liệu, lịch sử hội thoại và knowledge base."
+            return DEFAULT_GREETING_ANSWER
 
         messages = [
             {"role": "system", "content": SMALLTALK_SYSTEM_PROMPT},
@@ -221,14 +289,20 @@ class LLMService:
             },
         ]
         try:
-            return await self._chat(
+            answer = await self._chat(
                 self._model_light,
                 messages,
                 timeout=settings.LLM_ROUTER_TIMEOUT,
-                token_sink=token_sink,
             )
+            # Smalltalk rất ngắn: kiểm tra toàn bộ trước khi gửi để không stream ra
+            # câu trả lời lẫn chữ Trung do model đa ngôn ngữ sinh nhầm.
+            if re.search(r"[\u3400-\u4dbf\u4e00-\u9fff]", answer):
+                answer = DEFAULT_GREETING_ANSWER
+            if token_sink is not None:
+                await token_sink(answer)
+            return answer
         except httpx.HTTPError:
-            return "Xin chào! Mình có thể hỗ trợ bạn hỏi đáp dựa trên tài liệu, lịch sử hội thoại và knowledge base."
+            return DEFAULT_GREETING_ANSWER
 
     async def generate_direct_answer(
         self,
@@ -250,12 +324,33 @@ class LLMService:
             },
         ]
         try:
-            return await self._chat(
+            answer = await self._chat(
                 self._model_light,
                 messages,
                 timeout=settings.LLM_ROUTER_TIMEOUT,
-                token_sink=token_sink,
+                options={"temperature": 0.1, "num_predict": 300},
             )
+            if re.search(r"[\u3400-\u4dbf\u4e00-\u9fff]", answer):
+                answer = await self._chat(
+                    self._model_light,
+                    [
+                        {
+                            "role": "system",
+                            "content": (
+                                "Viết lại nội dung bằng tiếng Việt thuần túy. Giữ nguyên mọi "
+                                "endpoint, method, status code, field và số liệu. Không giải thích thêm."
+                            ),
+                        },
+                        {"role": "user", "content": answer},
+                    ],
+                    timeout=settings.LLM_ROUTER_TIMEOUT,
+                    options={"temperature": 0.0, "num_predict": 300},
+                )
+            if re.search(r"[\u3400-\u4dbf\u4e00-\u9fff]", answer):
+                answer = "Mình chưa thể tạo câu trả lời hoàn toàn bằng tiếng Việt ở lượt này."
+            if token_sink is not None:
+                await token_sink(answer)
+            return answer
         except httpx.HTTPError as exc:
             return f"[LLM error] Không gọi được model local cho direct-answer: {type(exc).__name__}: {exc}"
 

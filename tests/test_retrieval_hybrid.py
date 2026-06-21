@@ -1,5 +1,7 @@
 import unittest
+from unittest.mock import AsyncMock, patch
 
+from app.graph.nodes.rerank_trim_node import rerank_trim_node
 from app.services.retrieval_service import RetrievalService
 
 
@@ -47,6 +49,42 @@ class RetrievalHybridTests(unittest.TestCase):
         self.assertEqual(by_id["a"]["normalized_retrieval_score"], 1.0)
         self.assertEqual(by_id["b"]["normalized_retrieval_score"], 0.5)
         self.assertGreater(by_id["a"]["rerank_score"], by_id["b"]["rerank_score"])
+
+    def test_rerank_node_replaces_raw_documents_with_selected_documents(self):
+        raw = [{"id": "a", "score": 0.02, "content": "raw", "metadata": {}}]
+        selected = [{
+            "id": "a",
+            "score": 0.91,
+            "content": "reranked",
+            "source": "source",
+            "metadata": {"title": "Title", "source_type": "test"},
+        }]
+        state = {
+            "documents": raw,
+            "rewritten_question": "query",
+            "original_question": "query",
+            "search_plan": {},
+            "citations": [],
+            "metrics": {},
+            "trace": [],
+        }
+
+        import asyncio
+
+        with (
+            patch(
+                "app.graph.nodes.rerank_trim_node.retrieval_service.rerank_with_plan",
+                AsyncMock(return_value=selected),
+            ),
+            patch(
+                "app.graph.nodes.rerank_trim_node.retrieval_service.trim_by_token_budget",
+                return_value=selected,
+            ),
+        ):
+            result = asyncio.run(rerank_trim_node(state))
+
+        self.assertEqual(result["documents"], selected)
+        self.assertEqual(result["documents"][0]["score"], 0.91)
 
 
 if __name__ == "__main__":

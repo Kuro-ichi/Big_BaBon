@@ -34,6 +34,9 @@ async def rerank_trim_node(state):
         max_documents=settings.RETRIEVAL_MAX_DOCUMENTS,
         min_score=settings.RETRIEVAL_MIN_RERANK_SCORE,
     )
+    # Các node phía sau phải dùng score đã normalize/rerank, không dùng lại
+    # RRF score thô (~0.01-0.03) từ parallel retrieval để tính confidence.
+    state["documents"] = selected_docs
     state["selected_context"] = format_context(selected_docs)
     state["citations"] = extract_citations(selected_docs)
     state["metrics"]["answer_subject"] = retrieval_service.extract_subject(

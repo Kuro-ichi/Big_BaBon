@@ -1,0 +1,364 @@
+{
+  "total": 24,
+  "passed": 21,
+  "failed": 3,
+  "pass_rate": 0.875,
+  "latency_seconds": {
+    "min": 0.03,
+    "avg": 17.012,
+    "p50": 25.797,
+    "p90": 32.036,
+    "p95": 37.587,
+    "max": 39.031
+  },
+  "confidence": {
+    "avg": 0.9208,
+    "min": 0.75,
+    "max": 1.0
+  },
+  "citations": {
+    "avg_count": 4.5,
+    "min_count": 0,
+    "max_count": 8
+  },
+  "routes": {
+    "smalltalk": 6,
+    "rag": 17,
+    "direct_answer": 1
+  },
+  "route_accuracy": {
+    "correct": 23,
+    "total": 24,
+    "rate": 0.9583
+  },
+  "check_pass_rates": {
+    "request_ok": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "answer_not_empty": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "no_llm_error": {
+      "total": 24,
+      "passed": 22,
+      "rate": 0.9167
+    },
+    "route": {
+      "total": 24,
+      "passed": 23,
+      "rate": 0.9583
+    },
+    "min_confidence": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "min_citations": {
+      "total": 24,
+      "passed": 23,
+      "rate": 0.9583
+    },
+    "must_not_include": {
+      "total": 24,
+      "passed": 21,
+      "rate": 0.875
+    },
+    "no_foreign_script": {
+      "total": 24,
+      "passed": 24,
+      "rate": 1.0
+    },
+    "expected_source_types": {
+      "total": 18,
+      "passed": 17,
+      "rate": 0.9444
+    },
+    "must_include": {
+      "total": 18,
+      "passed": 17,
+      "rate": 0.9444
+    }
+  },
+  "status_codes": {
+    "200": 24
+  },
+  "server_latency_ms": {
+    "avg": 16991.8,
+    "p95": 37577.17,
+    "max": 39021.35
+  },
+  "client_overhead_ms": {
+    "avg": 19.87,
+    "p95": 52.32
+  },
+  "node_latency_ms": {
+    "answer_generation": {
+      "count": 17,
+      "min": 0.0,
+      "avg": 16453.75,
+      "p50": 19338.64,
+      "p95": 28786.34,
+      "max": 30006.43
+    },
+    "direct_answer": {
+      "count": 1,
+      "min": 8002.38,
+      "avg": 8002.38,
+      "p50": 8002.38,
+      "p95": 8002.38,
+      "max": 8002.38
+    },
+    "lightweight_guard": {
+      "count": 17,
+      "min": 0.06,
+      "avg": 0.11,
+      "p50": 0.1,
+      "p95": 0.17,
+      "max": 0.23
+    },
+    "load_runtime_context": {
+      "count": 24,
+      "min": 2.1,
+      "avg": 6.49,
+      "p50": 3.0,
+      "p95": 6.86,
+      "max": 81.12
+    },
+    "parallel_retrieval": {
+      "count": 13,
+      "min": 695.06,
+      "avg": 1614.23,
+      "p50": 1905.35,
+      "p95": 2074.6,
+      "max": 2078.73
+    },
+    "persist_async": {
+      "count": 24,
+      "min": 11.93,
+      "avg": 19.72,
+      "p50": 15.21,
+      "p95": 41.82,
+      "max": 49.09
+    },
+    "rerank_trim": {
+      "count": 13,
+      "min": 3.18,
+      "avg": 3.63,
+      "p50": 3.62,
+      "p95": 4.1,
+      "max": 4.21
+    },
+    "rule_context_check": {
+      "count": 13,
+      "min": 0.01,
+      "avg": 0.01,
+      "p50": 0.01,
+      "p95": 0.03,
+      "max": 0.06
+    },
+    "safety_triage": {
+      "count": 17,
+      "min": 0.14,
+      "avg": 0.31,
+      "p50": 0.27,
+      "p95": 0.52,
+      "max": 0.57
+    },
+    "smalltalk_answer": {
+      "count": 6,
+      "min": 0.03,
+      "avg": 0.04,
+      "p50": 0.04,
+      "p95": 0.05,
+      "max": 0.05
+    },
+    "smart_precheck": {
+      "count": 24,
+      "min": 0.28,
+      "avg": 4088.76,
+      "p50": 5036.62,
+      "p95": 8008.23,
+      "max": 8013.54
+    }
+  },
+  "context_followups": {
+    "total": 12,
+    "full_case_passed": 10,
+    "full_case_pass_rate": 0.8333,
+    "content_recall_passed": 11,
+    "content_recall_rate": 0.9167,
+    "route_correct": 11,
+    "route_accuracy": 0.9167,
+    "failed_ids": [
+      "MIX_U01_T4",
+      "MIX_U04_T3"
+    ]
+  },
+  "by_user": {
+    "mix-user-01": {
+      "total": 4,
+      "passed": 2,
+      "pass_rate": 0.5,
+      "avg_latency_seconds": 19.194
+    },
+    "mix-user-02": {
+      "total": 4,
+      "passed": 4,
+      "pass_rate": 1.0,
+      "avg_latency_seconds": 20.917
+    },
+    "mix-user-03": {
+      "total": 4,
+      "passed": 4,
+      "pass_rate": 1.0,
+      "avg_latency_seconds": 17.684
+    },
+    "mix-user-04": {
+      "total": 4,
+      "passed": 3,
+      "pass_rate": 0.75,
+      "avg_latency_seconds": 14.806
+    },
+    "mix-user-05": {
+      "total": 4,
+      "passed": 4,
+      "pass_rate": 1.0,
+      "avg_latency_seconds": 15.354
+    },
+    "mix-user-06": {
+      "total": 4,
+      "passed": 4,
+      "pass_rate": 1.0,
+      "avg_latency_seconds": 14.116
+    }
+  },
+  "by_subcategory": {
+    "food_pho": {
+      "total": 4,
+      "passed": 2,
+      "pass_rate": 0.5
+    },
+    "food_rice": {
+      "total": 4,
+      "passed": 4,
+      "pass_rate": 1.0
+    },
+    "diabetes": {
+      "total": 4,
+      "passed": 4,
+      "pass_rate": 1.0
+    },
+    "ckd": {
+      "total": 4,
+      "passed": 3,
+      "pass_rate": 0.75
+    },
+    "cancer": {
+      "total": 4,
+      "passed": 4,
+      "pass_rate": 1.0
+    },
+    "allergy": {
+      "total": 4,
+      "passed": 4,
+      "pass_rate": 1.0
+    }
+  },
+  "by_category": {
+    "smalltalk": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "avg_latency_seconds": 0.064,
+      "p95_latency_seconds": 0.141
+    },
+    "retrieval": {
+      "total": 6,
+      "passed": 5,
+      "failed": 1,
+      "avg_latency_seconds": 10.656,
+      "p95_latency_seconds": 35.447
+    },
+    "rag": {
+      "total": 6,
+      "passed": 5,
+      "failed": 1,
+      "avg_latency_seconds": 30.337,
+      "p95_latency_seconds": 31.919
+    },
+    "rag_context": {
+      "total": 6,
+      "passed": 5,
+      "failed": 1,
+      "avg_latency_seconds": 26.99,
+      "p95_latency_seconds": 36.919
+    }
+  },
+  "llm_error_count": 2,
+  "failed_ids": [
+    "MIX_U01_T2",
+    "MIX_U01_T4",
+    "MIX_U04_T3"
+  ],
+  "top_slowest": [
+    {
+      "id": "MIX_U01_T2",
+      "category": "retrieval",
+      "elapsed_seconds": 39.031
+    },
+    {
+      "id": "MIX_U03_T4",
+      "category": "rag_context",
+      "elapsed_seconds": 38.563
+    },
+    {
+      "id": "MIX_U03_T3",
+      "category": "rag",
+      "elapsed_seconds": 32.056
+    },
+    {
+      "id": "MIX_U05_T4",
+      "category": "rag_context",
+      "elapsed_seconds": 31.988
+    },
+    {
+      "id": "MIX_U04_T3",
+      "category": "rag",
+      "elapsed_seconds": 31.51
+    },
+    {
+      "id": "MIX_U02_T3",
+      "category": "rag",
+      "elapsed_seconds": 30.126
+    },
+    {
+      "id": "MIX_U01_T3",
+      "category": "rag",
+      "elapsed_seconds": 29.531
+    },
+    {
+      "id": "MIX_U06_T3",
+      "category": "rag",
+      "elapsed_seconds": 29.488
+    },
+    {
+      "id": "MIX_U05_T3",
+      "category": "rag",
+      "elapsed_seconds": 29.31
+    },
+    {
+      "id": "MIX_U02_T4",
+      "category": "rag_context",
+      "elapsed_seconds": 28.816
+    }
+  ],
+  "execution": {
+    "seconds": 409.3,
+    "requests_per_second": 0.0586,
+    "sequential": true
+  }
+}
