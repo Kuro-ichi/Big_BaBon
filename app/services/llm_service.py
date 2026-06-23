@@ -62,11 +62,14 @@ class LLMService:
         json_mode: bool = False,
         timeout: float | None = None,
         token_sink: TokenSink | None = None,
+        temperature: float | None = None,
     ) -> str:
         should_stream = token_sink is not None and not json_mode
         payload = {"model": model, "messages": messages, "stream": should_stream}
         if json_mode:
             payload["format"] = "json"
+        if temperature is not None:
+            payload["options"] = {"temperature": temperature}
         client = self._get_client()
         request_timeout = timeout or settings.LLM_ANSWER_TIMEOUT
 
@@ -226,6 +229,7 @@ class LLMService:
                 messages,
                 timeout=settings.LLM_ROUTER_TIMEOUT,
                 token_sink=token_sink,
+                temperature=0.3,
             )
         except httpx.HTTPError:
             return "Xin chào! Mình có thể hỗ trợ bạn hỏi đáp dựa trên tài liệu, lịch sử hội thoại và knowledge base."
@@ -255,6 +259,7 @@ class LLMService:
                 messages,
                 timeout=settings.LLM_ROUTER_TIMEOUT,
                 token_sink=token_sink,
+                temperature=0.3,
             )
         except httpx.HTTPError as exc:
             return f"[LLM error] Không gọi được model local cho direct-answer: {type(exc).__name__}: {exc}"
@@ -296,6 +301,7 @@ class LLMService:
                 messages,
                 timeout=settings.LLM_ANSWER_TIMEOUT,
                 token_sink=token_sink,
+                temperature=0.2,
             )
         except httpx.HTTPError as exc:
             return f"[LLM error] Không gọi được model local: {type(exc).__name__}: {exc}"

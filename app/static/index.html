@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Big BaBon Chat</title>
+  <style>
+    :root { --bg:#0f1115; --panel:#1a1d24; --accent:#4f8cff; --text:#e6e8ee; --muted:#8a90a0; --err:#ff6b6b; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+           background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; }
+    .hidden { display:none !important; }
+
+    /* Auth */
+    #auth { margin:auto; width:100%; max-width:360px; padding:24px; }
+    #auth h1 { text-align:center; font-size:22px; margin:0 0 4px; }
+    #auth .sub { text-align:center; color:var(--muted); margin:0 0 20px; font-size:13px; }
+    .card { background:var(--panel); border-radius:12px; padding:22px; }
+    .tabs { display:flex; margin-bottom:16px; border-radius:8px; overflow:hidden; border:1px solid #2a2e38; }
+    .tabs button { flex:1; padding:10px; background:transparent; color:var(--muted); border:none; cursor:pointer; font-size:14px; }
+    .tabs button.active { background:var(--accent); color:#fff; }
+    input { width:100%; padding:11px 12px; margin-bottom:12px; border-radius:8px; border:1px solid #2a2e38;
+            background:#11141a; color:var(--text); font-size:14px; }
+    input:focus { outline:none; border-color:var(--accent); }
+    .btn { width:100%; padding:11px; border:none; border-radius:8px; background:var(--accent); color:#fff;
+           font-size:15px; cursor:pointer; }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
+    .msg-line { font-size:13px; min-height:18px; margin-top:8px; }
+    .msg-line.err { color:var(--err); }
+    .msg-line.ok { color:#5ad19a; }
+
+    /* Chat */
+    #chat { flex:1; display:flex; flex-direction:column; height:100vh; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:12px 18px;
+             background:var(--panel); border-bottom:1px solid #2a2e38; }
+    header .who { font-size:14px; color:var(--muted); }
+    header .who b { color:var(--text); }
+    header button { background:transparent; color:var(--muted); border:1px solid #2a2e38; border-radius:6px;
+                    padding:6px 12px; cursor:pointer; font-size:13px; }
+    #messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; }
+    .bubble { max-width:75%; padding:10px 14px; border-radius:12px; font-size:14px; line-height:1.5; white-space:pre-wrap; }
+    .bubble.user { align-self:flex-end; background:var(--accent); color:#fff; border-bottom-right-radius:3px; }
+    .bubble.bot { align-self:flex-start; background:var(--panel); border-bottom-left-radius:3px; }
+    .bubble.meta { align-self:center; color:var(--muted); font-size:12px; background:transparent; }
+    #composer { display:flex; gap:10px; padding:14px 18px; border-top:1px solid #2a2e38; background:var(--panel); }
+    #composer input { margin:0; }
+    #composer button { width:auto; padding:0 20px; }
+  </style>
+</head>
+<body>
+  <!-- AUTH VIEW -->
+  <div id="auth">
+    <h1>Big BaBon</h1>
+    <p class="sub">RAG chatbot tiếng Việt</p>
+    <div class="card">
+      <div class="tabs">
+        <button id="tab-login" class="active" onclick="setMode('login')">Đăng nhập</button>
+        <button id="tab-register" onclick="setMode('register')">Đăng ký</button>
+      </div>
+      <input id="username" placeholder="Tên đăng nhập" autocomplete="username" />
+      <input id="password" type="password" placeholder="Mật khẩu" autocomplete="current-password" />
+      <button class="btn" id="auth-btn" onclick="submitAuth()">Đăng nhập</button>
+      <div class="msg-line" id="auth-msg"></div>
+    </div>
+  </div>
+
+  <!-- CHAT VIEW -->
+  <div id="chat" class="hidden">
+    <header>
+      <div class="who">Xin chào, <b id="who-name"></b></div>
+      <button onclick="logout()">Đăng xuất</button>
+    </header>
+    <div id="messages"></div>
+    <form id="composer" onsubmit="sendMessage(event)">
+      <input id="chat-input" placeholder="Nhập tin nhắn..." autocomplete="off" />
+      <button class="btn" type="submit" id="send-btn">Gửi</button>
+    </form>
+  </div>
+
+  <script>
+    const API = "";  // same origin
+    let mode = "login";
+
+    // ---- session token persistence ----
+    function getToken()    { return localStorage.getItem("bb_token"); }
+    function getUsername() { return localStorage.getItem("bb_username"); }
+    function getSession()  {
+      let s = localStorage.getItem("bb_session");
+      if (!s) { s = "sess-" + Math.random().toString(36).slice(2) + "-" + (window.crypto?.randomUUID?.() || Date.now()); localStorage.setItem("bb_session", s); }
+      return s;
+    }
+
+    function setMode(m) {
+      mode = m;
+      document.getElementById("tab-login").classList.toggle("active", m === "login");
+      document.getElementById("tab-register").classList.toggle("active", m === "register");
+      document.getElementById("auth-btn").textContent = m === "login" ? "Đăng nhập" : "Tạo tài khoản";
+      document.getElementById("auth-msg").textContent = "";
+    }
+
+    function showMsg(text, kind) {
+      const el = document.getElementById("auth-msg");
+      el.textContent = text; el.className = "msg-line " + (kind || "");
+    }
+
+    async function submitAuth() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      if (!username || !password) { showMsg("Nhập đủ tên đăng nhập và mật khẩu", "err"); return; }
+      const btn = document.getElementById("auth-btn");
+      btn.disabled = true;
+      const path = mode === "login" ? "/v1/auth/login" : "/v1/auth/register";
+      try {
+        const res = await fetch(API + path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showMsg(data.detail || "Lỗi", "err"); btn.disabled = false; return; }
+        localStorage.setItem("bb_token", data.access_token);
+        localStorage.setItem("bb_username", data.username);
+        enterChat();
+      } catch (e) {
+        showMsg("Không kết nối được server", "err");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function enterChat() {
+      document.getElementById("auth").classList.add("hidden");
+      document.getElementById("chat").classList.remove("hidden");
+      document.getElementById("who-name").textContent = getUsername() || "bạn";
+      document.getElementById("chat-input").focus();
+    }
+
+    function logout() {
+      localStorage.removeItem("bb_token");
+      localStorage.removeItem("bb_username");
+      document.getElementById("messages").innerHTML = "";
+      document.getElementById("chat").classList.add("hidden");
+      document.getElementById("auth").classList.remove("hidden");
+      document.getElementById("password").value = "";
+    }
+
+    function addBubble(text, cls) {
+      const div = document.createElement("div");
+      div.className = "bubble " + cls;
+      div.textContent = text;
+      const box = document.getElementById("messages");
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+      return div;
+    }
+
+    async function sendMessage(ev) {
+      ev.preventDefault();
+      const input = document.getElementById("chat-input");
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      addBubble(text, "user");
+      const sendBtn = document.getElementById("send-btn");
+      sendBtn.disabled = true;
+      const pending = addBubble("…", "bot");
+      try {
+        const res = await fetch(API + "/v1/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getToken() },
+          body: JSON.stringify({ session_id: getSession(), message: text }),
+        });
+        if (res.status === 401) { pending.remove(); addBubble("Phiên hết hạn, vui lòng đăng nhập lại.", "meta"); logout(); return; }
+        const data = await res.json();
+        if (!res.ok) { pending.textContent = "Lỗi: " + (data.detail || res.status); pending.className = "bubble meta"; return; }
+        pending.textContent = data.answer || "(không có nội dung)";
+        if (data.citations && data.citations.length) {
+          addBubble("Nguồn: " + data.citations.map(c => c.title || c.source || "?").join(", "), "meta");
+        }
+      } catch (e) {
+        pending.textContent = "Không kết nối được server";
+        pending.className = "bubble meta";
+      } finally {
+        sendBtn.disabled = false;
+        document.getElementById("chat-input").focus();
+      }
+    }
+
+    // auto-enter chat if token exists
+    if (getToken()) enterChat();
+  </script>
+</body>
+</html>

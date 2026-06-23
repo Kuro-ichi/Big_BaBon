@@ -1,0 +1,12 @@
+# UI Gradio (public-share). PHẢI cài trong virtualenv RIÊNG, không chung venv backend.
+# Lý do: gradio cần huggingface-hub>=1.2, còn transformers (backend) cần huggingface-hub<1.0
+# -> xung đột cứng, không thể chung 1 venv.
+#
+# Tạo + cài:
+#   python -m venv venv-ui
+#   venv-ui\Scripts\python.exe -m pip install -r requirements-ui.txt
+#
+# gradio_app.py chỉ gọi API backend qua HTTP (không import package app),
+# nên venv này KHÔNG cần torch/transformers/sentence-transformers.
+gradio==6.19.0
+httpx==0.28.1

@@ -2,8 +2,13 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
     email VARCHAR(255) UNIQUE,
     name VARCHAR(255),
+    username VARCHAR(100) UNIQUE,
+    password_hash TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
+-- Backfill cho DB cũ đã tạo bảng users trước khi có cột auth
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(100) UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
 
 CREATE TABLE IF NOT EXISTS sessions (
     id UUID PRIMARY KEY,
