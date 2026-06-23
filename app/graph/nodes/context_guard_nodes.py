@@ -84,7 +84,13 @@ def lightweight_guard_node(state):
     if not state.get("answer"):
         problems.append("empty_answer")
     answer_folded = _fold(state.get("answer") or "")
-    unsafe_pattern = _find_unsafe_pattern(answer_folded)
+    # Safety fast-path dùng câu trả lời tĩnh đã được duyệt. Không quét lại bằng
+    # matcher từ khóa đơn giản vì các câu an toàn thường chứa cụm "không nên
+    # nhịn ăn", dễ bị nhận nhầm thành khuyến nghị nguy hiểm.
+    curated_safety_answer = bool(
+        state.get("safety_fast_path") and state.get("safety_action") == "respond"
+    )
+    unsafe_pattern = None if curated_safety_answer else _find_unsafe_pattern(answer_folded)
     if unsafe_pattern:
         problems.append(f"unsafe_phrase:{unsafe_pattern}")
     if problems:
